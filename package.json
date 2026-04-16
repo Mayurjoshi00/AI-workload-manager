@@ -1,0 +1,58 @@
+{
+  "name": "ai-workload-manager",
+  "version": "1.0.0",
+  "description": "Intelligent Resource Monitoring and Management System for Local AI Workloads",
+  "main": "src/main/main.js",
+  "scripts": {
+    "dev:react": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
+    "dev:server": "nodemon src/server/index.js",
+    "dev": "concurrently \"npm run dev:react\" \"npm run dev:server\" \"npm run dev:electron\"",
+    "build": "vite build",
+    "dist": "npm run build && electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "electron-builder": "^26.0.12",
+    "express": "^5.1.0",
+    "lucide-react": "^1.8.0",
+    "mongoose": "^8.13.2",
+    "nodemon": "^3.1.9",
+    "postcss": "^8.5.3",
+    "ps-list": "^8.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.5.1",
+    "recharts": "^2.15.3",
+    "systeminformation": "^5.25.11",
+    "tailwindcss": "^3.4.17",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "vite": "^6.3.2",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.aiworkloadmanager.app",
+    "productName": "AI Workload Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/main/**/*",
+      "src/server/**/*",
+      "dist/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

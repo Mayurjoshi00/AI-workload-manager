@@ -4,7 +4,7 @@ import useProcessStore from '../store/processStore'
 
 const API = 'http://localhost:5001/api'
 
-export default function useMetrics(interval = 2000) {
+export default function useMetrics(interval = 4000) {
   const { setMetrics, setGPU, setError } = useMetricsStore()
   const { setProcesses } = useProcessStore()
 

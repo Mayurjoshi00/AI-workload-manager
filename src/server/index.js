@@ -10,6 +10,7 @@ const analyticsRouter = require('./routes/analytics')
 
 const app = express()
 const PORT = process.env.PORT || 5001
+let serverStarted = false
 
 app.use(cors())
 app.use(express.json())
@@ -24,15 +25,29 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'AI Workload Manager server running' })
 })
 
+function startServer() {
+  if (serverStarted) return
+
+  serverStarted = true
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+    if (process.send) process.send('Server ready')
+  })
+}
+
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('MongoDB connected')
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`)
-      if (process.send) process.send('Server ready')
+if (!process.env.MONGO_URI) {
+  console.warn('MONGO_URI is not set; starting the server without a database connection')
+  startServer()
+} else {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log('MongoDB connected')
+      startServer()
     })
-  })
-  .catch((err) => {
-    console.error('MongoDB connection failed:', err.message)
-  })
+    .catch((err) => {
+      console.error('MongoDB connection failed:', err.message)
+      console.warn('Starting the server without a database connection')
+      startServer()
+    })
+}

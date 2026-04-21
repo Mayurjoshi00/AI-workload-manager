@@ -4,12 +4,17 @@ const si = require('systeminformation')
 
 router.get('/live', async (req, res) => {
   try {
-    const [cpu, mem, disk, network] = await Promise.all([
+    const [cpu, mem, diskStats, network, disks] = await Promise.all([
       si.currentLoad(),
       si.mem(),
       si.fsStats(),
       si.networkStats(),
+      si.fsSize(),
     ])
+
+    const totalDisk = disks.reduce((sum, item) => sum + (item.size || 0), 0)
+    const usedDisk = disks.reduce((sum, item) => sum + (item.used || 0), 0)
+    const usedDiskPercent = totalDisk > 0 ? ((usedDisk / totalDisk) * 100).toFixed(1) : '0.0'
 
     res.json({
       cpu: {
@@ -23,8 +28,11 @@ router.get('/live', async (req, res) => {
         usedPercent: ((mem.used / mem.total) * 100).toFixed(1),
       },
       disk: {
-        readSpeed: disk.rIO_sec,
-        writeSpeed: disk.wIO_sec,
+        total: totalDisk,
+        used: usedDisk,
+        usedPercent: usedDiskPercent,
+        readSpeed: diskStats?.rIO_sec || 0,
+        writeSpeed: diskStats?.wIO_sec || 0,
       },
       network: {
         rx: network[0]?.rx_sec || 0,
@@ -38,8 +46,27 @@ router.get('/live', async (req, res) => {
 
 router.get('/gpu', async (req, res) => {
   try {
-    const gpu = await si.graphics()
-    res.json(gpu.controllers)
+    const graphics = await si.graphics()
+    const gpus = (graphics.controllers || []).map((controller) => {
+      const usagePercent = controller.utilizationGpu == null
+        ? null
+        : Number(controller.utilizationGpu)
+
+      return {
+        name: controller.model || 'Unknown GPU',
+        vendor: controller.vendor || 'Unknown',
+        vramMB: controller.vram || 0,
+        vramGB: Number(((controller.vram || 0) / 1024).toFixed(1)),
+        usagePercent,
+        temperature: controller.temperatureGpu == null ? null : Number(controller.temperatureGpu),
+      }
+    })
+
+    res.json({
+      gpus,
+      primary: gpus[0] || null,
+      count: gpus.length,
+    })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

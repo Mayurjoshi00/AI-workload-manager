@@ -5,13 +5,14 @@ import useProcessStore from '../store/processStore'
 import MetricCard from '../components/MetricCard'
 import CPUChart from '../components/CPUChart'
 import MemoryChart from '../components/MemoryChart'
+import GPUChart from '../components/GPUChart'
 import AIProcessList from '../components/AIProcessList'
-import { Cpu, MemoryStick, HardDrive, Wifi } from 'lucide-react'
+import { Cpu, MemoryStick, HardDrive, Wifi, Gpu } from 'lucide-react'
 
 export default function Dashboard() {
   useMetrics(2000)
 
-  const { cpu, memory, disk, network, isLoading } = useMetricsStore()
+  const { cpu, memory, disk, network, gpu, isLoading } = useMetricsStore()
   const { aiProcesses } = useProcessStore()
 
   if (isLoading) {
@@ -58,7 +59,7 @@ export default function Dashboard() {
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
         <MetricCard
           title="CPU Usage"
           value={`${cpu?.usage ?? 0}%`}
@@ -76,12 +77,12 @@ export default function Dashboard() {
           percent={parseFloat(memory?.usedPercent ?? 0)}
         />
         <MetricCard
-          title="Disk I/O"
-          value={formatSpeed(disk?.readSpeed)}
-          subtitle={`Write: ${formatSpeed(disk?.writeSpeed)}`}
+          title="Disk Usage"
+          value={formatBytes(disk?.used)}
+          subtitle={`of ${formatBytes(disk?.total)} — ${disk?.usedPercent ?? 0}%`}
           icon={HardDrive}
           color="green"
-          percent={null}
+          percent={parseFloat(disk?.usedPercent ?? 0)}
         />
         <MetricCard
           title="Network"
@@ -91,12 +92,21 @@ export default function Dashboard() {
           color="orange"
           percent={null}
         />
+        <MetricCard
+          title="GPU"
+          value={`${gpu?.primary?.usagePercent ?? 0}%`}
+          subtitle={`${gpu?.primary?.name ?? 'No GPU detected'}${gpu?.primary?.vramGB ? ` — ${gpu.primary.vramGB.toFixed(1)} GB VRAM` : ''}`}
+          icon={Gpu}
+          color="cyan"
+          percent={parseFloat(gpu?.primary?.usagePercent ?? 0)}
+        />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <CPUChart />
         <MemoryChart />
+        <GPUChart />
       </div>
 
       {/* AI Processes */}

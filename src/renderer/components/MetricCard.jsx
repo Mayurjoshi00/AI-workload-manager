@@ -5,6 +5,7 @@ const colorMap = {
   purple: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
   green: 'text-green-400 bg-green-500/10 border-green-500/20',
   orange: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
+  cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
 }
 
 const barColor = {
@@ -12,6 +13,7 @@ const barColor = {
   purple: 'bg-purple-500',
   green: 'bg-green-500',
   orange: 'bg-orange-500',
+  cyan: 'bg-cyan-500',
 }
 
 export default function MetricCard({ title, value, subtitle, icon: Icon, color, percent }) {

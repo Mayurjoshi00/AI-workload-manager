@@ -9,6 +9,7 @@ const useMetricsStore = create((set) => ({
   history: {
     cpu: [],
     memory: [],
+    gpu: [],
   },
   isLoading: true,
   error: null,
@@ -31,7 +32,16 @@ const useMetricsStore = create((set) => ({
     }
   })),
 
-  setGPU: (data) => set({ gpu: data }),
+  setGPU: (data) => set((state) => ({
+    gpu: data,
+    history: {
+      ...state.history,
+      gpu: [...state.history.gpu.slice(-59), {
+        time: new Date().toLocaleTimeString(),
+        value: parseFloat(data?.primary?.usagePercent ?? 0),
+      }],
+    },
+  })),
   setError: (error) => set({ error, isLoading: false }),
 }))
 

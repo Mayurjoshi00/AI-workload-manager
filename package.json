@@ -5,7 +5,7 @@
   "main": "src/main/main.js",
   "scripts": {
     "dev:react": "vite",
-    "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
+    "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development .\\node_modules\\.bin\\electron.cmd .",
     "dev:server": "nodemon src/server/index.js",
     "dev": "concurrently \"npm run dev:react\" \"npm run dev:server\" \"npm run dev:electron\"",
     "build": "vite build",

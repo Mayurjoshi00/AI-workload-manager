@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
     const aiProcesses = enriched.filter(p => p.isAI)
     const topProcesses = enriched
       .sort((a, b) => b.cpu - a.cpu)
-      .slice(0, 20)
+      .slice(0, 15)
 
     res.json({ all: topProcesses, ai: aiProcesses })
   } catch (err) {

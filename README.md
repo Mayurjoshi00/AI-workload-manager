@@ -47,6 +47,10 @@ This starts:
 - `npm run build` - Build frontend assets with Vite
 - `npm run dist` - Create distributable desktop build
 
+## Screenshots
+
+### Dashboard
+
 ## Notes
 
 - MongoDB is optional for basic dashboard metrics.

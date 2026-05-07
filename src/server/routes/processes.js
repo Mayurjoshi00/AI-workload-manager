@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const si = require('systeminformation')
+const sysinfo = require('../services/sysinfoService')
 
 const AI_SIGNATURES = [
   'ollama', 'lmstudio', 'llama', 'whisper',
@@ -10,26 +10,25 @@ const AI_SIGNATURES = [
 
 router.get('/', async (req, res) => {
   try {
-    const processes = await si.processes()
-    const enriched = processes.list.map(p => ({
-      pid: p.pid,
-      name: p.name,
-      cpu: p.cpu,
-      memory: p.mem,
-      memoryBytes: p.memRss,
-      command: p.command,
+    const list = await sysinfo.getProcesses()
+    const enriched = list.map(p => ({
+      ...p,
       isAI: AI_SIGNATURES.some(sig =>
-        p.name.toLowerCase().includes(sig) ||
-        (p.command && p.command.toLowerCase().includes(sig))
+        (p.name || '').toLowerCase().includes(sig) ||
+        (p.command || '').toLowerCase().includes(sig)
       ),
     }))
 
     const aiProcesses = enriched.filter(p => p.isAI)
     const topProcesses = enriched
-      .sort((a, b) => b.cpu - a.cpu)
+      .slice() // copy
+      .sort((a, b) => (b.cpu || 0) - (a.cpu || 0))
       .slice(0, 15)
 
-    res.json({ all: topProcesses, ai: aiProcesses })
+    // Return full list (sorted by pid) plus top CPU and AI subsets
+    const allByPid = enriched.slice().sort((a, b) => (a.pid || 0) - (b.pid || 0))
+
+    res.json({ all: allByPid, top: topProcesses, ai: aiProcesses })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

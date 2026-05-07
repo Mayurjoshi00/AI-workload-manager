@@ -21,27 +21,35 @@ const useMetricsStore = create((set) => ({
     network: data.network,
     isLoading: false,
     history: {
-      cpu: [...state.history.cpu.slice(-59), {
+      cpu: (() => {
+        const newVal = parseFloat(data?.cpu?.usage ?? 0)
+        const prevEntry = (state.history && state.history.cpu && state.history.cpu[state.history.cpu.length - 1]) || null
+        const prevVal = prevEntry ? parseFloat(prevEntry.value) : newVal
+        const smoothed = Number((prevVal * 0.6 + newVal * 0.4).toFixed(1))
+        return [...(state.history?.cpu || []).slice(-59), { time: new Date().toLocaleTimeString(), value: smoothed }]
+      })(),
+      memory: [...(state.history?.memory || []).slice(-59), {
         time: new Date().toLocaleTimeString(),
-        value: parseFloat(data.cpu.usage),
+        value: parseFloat(data?.memory?.usedPercent ?? 0),
       }],
-      memory: [...state.history.memory.slice(-59), {
-        time: new Date().toLocaleTimeString(),
-        value: parseFloat(data.memory.usedPercent),
-      }],
+      // preserve gpu history if present
+      gpu: state.history?.gpu || [],
     }
   })),
 
-  setGPU: (data) => set((state) => ({
-    gpu: data,
-    history: {
-      ...state.history,
-      gpu: [...state.history.gpu.slice(-59), {
-        time: new Date().toLocaleTimeString(),
-        value: parseFloat(data?.primary?.usagePercent ?? 0),
-      }],
-    },
-  })),
+  setGPU: (data) => set((state) => {
+    const prevGpu = (state.history && state.history.gpu) || []
+    return ({
+      gpu: data,
+      history: {
+        ...state.history,
+        gpu: [...prevGpu.slice(-59), {
+          time: new Date().toLocaleTimeString(),
+          value: parseFloat(data?.primary?.usagePercent ?? 0),
+        }],
+      },
+    })
+  }),
   setError: (error) => set({ error, isLoading: false }),
 }))
 

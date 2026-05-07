@@ -1,19 +1,16 @@
 import React, { useEffect } from 'react'
 import useMetrics from '../hooks/useMetrics'
 import useMetricsStore from '../store/metricsStore'
-import useProcessStore from '../store/processStore'
 import MetricCard from '../components/MetricCard'
 import CPUChart from '../components/CPUChart'
 import MemoryChart from '../components/MemoryChart'
 import GPUChart from '../components/GPUChart'
-import AIProcessList from '../components/AIProcessList'
 import { Cpu, MemoryStick, HardDrive, Wifi, Gpu } from 'lucide-react'
 
 export default function Dashboard() {
   useMetrics(2000)
 
   const { cpu, memory, disk, network, gpu, isLoading } = useMetricsStore()
-  const { aiProcesses } = useProcessStore()
 
   if (isLoading) {
     return (
@@ -46,17 +43,6 @@ export default function Dashboard() {
           Real-time monitoring — updates every 2 seconds
         </p>
       </div>
-
-      {/* AI Process Banner */}
-      {aiProcesses.length > 0 && (
-        <div className="bg-blue-600/10 border border-blue-500/30 rounded-xl px-4 py-3 flex items-center gap-3">
-          <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-          <p className="text-blue-300 text-sm">
-            <span className="font-semibold">{aiProcesses.length} AI process{aiProcesses.length > 1 ? 'es' : ''} detected</span>
-            {' '}— {aiProcesses.map(p => p.name).join(', ')}
-          </p>
-        </div>
-      )}
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
@@ -95,7 +81,7 @@ export default function Dashboard() {
         <MetricCard
           title="GPU"
           value={`${gpu?.primary?.usagePercent ?? 0}%`}
-          subtitle={`${gpu?.primary?.name ?? 'No GPU detected'}${gpu?.primary?.vramGB ? ` — ${gpu.primary.vramGB.toFixed(1)} GB VRAM` : ''}`}
+          subtitle={gpu?.detected ? `${gpu.primary.name} ${gpu?.primary?.vramGB ? `— ${gpu.primary.vramGB.toFixed(1)} GB VRAM` : ''}` : 'No GPU detected'}
           icon={Gpu}
           color="cyan"
           percent={parseFloat(gpu?.primary?.usagePercent ?? 0)}
@@ -103,14 +89,13 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <CPUChart />
         <MemoryChart />
-        <GPUChart />
+        <div className="xl:col-span-2">
+          <GPUChart />
+        </div>
       </div>
-
-      {/* AI Processes */}
-      <AIProcessList />
     </div>
   )
 }

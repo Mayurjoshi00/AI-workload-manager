@@ -19,7 +19,7 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="w-56 h-screen bg-[#141414] border-r border-[#222] flex flex-col">
+    <aside className="w-56 h-screen bg-[#141414] border-r border-[#222] flex flex-col animate-sidebar-enter">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-[#222]">
         <div className="flex items-center gap-2">
@@ -32,13 +32,14 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {navItems.map(({ to, icon: Icon, label }, index) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
+            style={{ animationDelay: `${index * 55}ms` }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
+              `animate-nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 outline-none ring-0 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ${
                 isActive
                   ? 'bg-blue-600 text-white font-medium'
                   : 'text-gray-400 hover:text-white hover:bg-[#1f1f1f]'

@@ -25,27 +25,46 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'AI Workload Manager server running' })
 })
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(async () => {
-    console.log('MongoDB connected')
-    app.listen(PORT, () => {
-      console.log('Server running on port ' + PORT)
-      if (process.send) process.send('Server ready')
-    })
-    await startSession()
-    startAlertEngine(10000)
+function startServerAndServices(mongoConnected = false) {
+  app.listen(PORT, async () => {
+    console.log('Server running on port ' + PORT)
+    if (process.send) process.send('Server ready')
+    if (mongoConnected) {
+      try {
+        await startSession()
+        startAlertEngine(10000)
+      } catch (err) {
+        console.error('Failed to start DB-backed services:', err.message)
+      }
+    } else {
+      console.warn('MongoDB not connected: session and alert services disabled')
+    }
   })
-  .catch((err) => {
-    console.error('MongoDB connection failed:', err.message)
-  })
+}
 
-// End session cleanly when server stops
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log('MongoDB connected')
+      startServerAndServices(true)
+    })
+    .catch((err) => {
+      console.error('MongoDB connection failed:', err.message)
+      console.warn('Starting server without MongoDB-backed services')
+      startServerAndServices(false)
+    })
+} else {
+  console.warn('MONGO_URI not set; starting server without MongoDB-backed services')
+  startServerAndServices(false)
+}
+
+// End session cleanly when server stops (only relevant if DB services started)
 process.on('SIGINT', async () => {
-  await endSession()
+  try { await endSession() } catch (e) { }
   process.exit(0)
 })
 
 process.on('SIGTERM', async () => {
-  await endSession()
+  try { await endSession() } catch (e) { }
   process.exit(0)
 })

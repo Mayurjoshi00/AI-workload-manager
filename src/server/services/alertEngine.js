@@ -1,4 +1,4 @@
-const si = require('systeminformation')
+const sysinfo = require('./sysinfoService')
 const Alert = require('../models/Alert')
 const { updateSession, incrementAlertCount } = require('./sessionService')
 
@@ -34,16 +34,13 @@ async function checkAndSaveAlert(type, value, message, suggestion, processName =
 
 async function runChecks(aiProcesses = []) {
   try {
-    const [cpuLoad, mem, graphics] = await Promise.all([
-      si.currentLoad(),
-      si.mem(),
-      si.graphics(),
-    ])
+    const live = await sysinfo.getLiveMetrics()
+    const gpuInfo = await sysinfo.getGPUInfo()
 
-    const cpuUsage = parseFloat(cpuLoad.currentLoad.toFixed(1))
-    const ramUsage = parseFloat(((mem.used / mem.total) * 100).toFixed(1))
-    const gpu = graphics.controllers?.[0]
-    const gpuUsage = gpu?.utilizationGpu ?? null
+    const cpuUsage = parseFloat(live.cpu.usage || 0)
+    const ramUsage = parseFloat(live.memory.usedPercent || 0)
+    const gpu = gpuInfo.primary
+    const gpuUsage = gpu?.usagePercent ?? null
 
     // Update session with latest metrics
     await updateSession(cpuUsage, ramUsage, gpuUsage, aiProcesses)

@@ -12,7 +12,7 @@ export default function App() {
     <Router>
       <div className="flex h-screen w-screen overflow-hidden bg-[#0f0f0f]">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto animate-content-enter">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/processes" element={<Processes />} />

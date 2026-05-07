@@ -18,7 +18,7 @@ const barColor = {
 
 export default function MetricCard({ title, value, subtitle, icon: Icon, color, percent }) {
   return (
-    <div className={`rounded-xl border p-4 ${colorMap[color]}`}>
+    <div className={`animate-card-enter rounded-xl border p-4 transition-transform duration-200 hover:-translate-y-0.5 ${colorMap[color]}`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">{title}</span>
         <Icon size={16} className={colorMap[color].split(' ')[0]} />

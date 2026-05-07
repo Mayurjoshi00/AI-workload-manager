@@ -3,9 +3,9 @@ import useProcessStore from '../store/processStore'
 import { Bot, AlertTriangle } from 'lucide-react'
 
 export default function AIProcessList() {
-  const { aiProcesses, processes } = useProcessStore()
+  const { aiProcesses, processes, topProcesses } = useProcessStore()
 
-  const topProcesses = processes.slice(0, 8)
+  const topProcessesView = (topProcesses && topProcesses.length) ? topProcesses.slice(0, 8) : processes.slice(0, 8)
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -49,7 +49,7 @@ export default function AIProcessList() {
           <h2 className="text-sm font-medium text-white">Top Processes by CPU</h2>
         </div>
         <div className="space-y-2">
-          {topProcesses.map((p) => (
+          {topProcessesView.map((p) => (
             <div key={p.pid} className="flex items-center justify-between bg-[#1a1a1a] rounded-lg px-3 py-2">
               <div className="flex items-center gap-2">
                 {p.isAI && <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />}

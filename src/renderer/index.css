@@ -31,3 +31,72 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+@keyframes sidebarEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes contentEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes navItemEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-sidebar-enter {
+  animation: sidebarEnter 260ms ease-out both;
+}
+
+.animate-content-enter {
+  animation: contentEnter 280ms ease-out both;
+}
+
+.animate-nav-item {
+  animation: navItemEnter 260ms ease-out both;
+}
+
+.animate-card-enter {
+  animation: cardEnter 320ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sidebar-enter,
+  .animate-content-enter,
+  .animate-nav-item,
+  .animate-card-enter {
+    animation: none !important;
+  }
+}

@@ -3,6 +3,7 @@ const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const { startAlertEngine } = require('./services/alertEngine')
+const { startPolling } = require('./services/pollingService')
 const { startSession, endSession } = require('./services/sessionService')
 
 const metricsRouter = require('./routes/metrics')
@@ -31,8 +32,9 @@ function startServerAndServices(mongoConnected = false) {
     if (process.send) process.send('Server ready')
     if (mongoConnected) {
       try {
-        await startSession()
-        startAlertEngine(10000)
+      await startPolling()
+      await startSession()
+      startAlertEngine(10000)
       } catch (err) {
         console.error('Failed to start DB-backed services:', err.message)
       }

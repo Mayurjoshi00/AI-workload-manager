@@ -34,15 +34,16 @@ async function checkAndSaveAlert(type, value, message, suggestion, processName =
 
 async function runChecks(aiProcesses = []) {
   try {
-    const live = await sysinfo.getLiveMetrics()
-    const gpuInfo = await sysinfo.getGPUInfo()
+    const live = sysinfo.getLiveMetrics()
+    const gpuInfo = sysinfo.getGPUInfo()
 
     const cpuUsage = parseFloat(live.cpu.usage || 0)
     const ramUsage = parseFloat(live.memory.usedPercent || 0)
+    const usedGB = (live.memory.used / 1024 / 1024 / 1024).toFixed(1)
+    const totalGB = (live.memory.total / 1024 / 1024 / 1024).toFixed(1)
     const gpu = gpuInfo.primary
     const gpuUsage = gpu?.usagePercent ?? null
 
-    // Update session with latest metrics
     await updateSession(cpuUsage, ramUsage, gpuUsage, aiProcesses)
 
     if (cpuUsage >= THRESHOLDS.cpu) {
@@ -54,8 +55,6 @@ async function runChecks(aiProcesses = []) {
     }
 
     if (ramUsage >= THRESHOLDS.memory) {
-      const usedGB = (mem.used / 1024 / 1024 / 1024).toFixed(1)
-      const totalGB = (mem.total / 1024 / 1024 / 1024).toFixed(1)
       await checkAndSaveAlert(
         'memory', ramUsage,
         'Memory usage is high at ' + ramUsage + '% (' + usedGB + ' GB of ' + totalGB + ' GB used)',
@@ -68,7 +67,7 @@ async function runChecks(aiProcesses = []) {
         'gpu', gpuUsage,
         'GPU utilisation is very high at ' + gpuUsage + '%',
         'Consider switching to a smaller quantised model to reduce GPU load.',
-        gpu?.model,
+        gpu?.name,
       )
     }
 

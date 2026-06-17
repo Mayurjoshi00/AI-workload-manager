@@ -34,4 +34,13 @@ router.patch('/:id/resolve', async (req, res) => {
   }
 })
 
+router.delete('/clear', async (req, res) => {
+  try {
+    await Alert.deleteMany({})
+    res.json({ message: 'All alerts cleared' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router

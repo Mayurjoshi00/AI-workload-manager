@@ -6,6 +6,7 @@ import Processes from './pages/Processes'
 import Alerts from './pages/Alerts'
 import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
+import AskAI from './pages/AskAI'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/ask" element={<AskAI />} />
           </Routes>
         </main>
       </div>

@@ -7,6 +7,7 @@ import {
   BarChart2,
   Settings,
   Activity,
+  Sparkles,
 } from 'lucide-react'
 
 const navItems = [
@@ -14,6 +15,7 @@ const navItems = [
   { to: '/processes', icon: Cpu, label: 'Processes' },
   { to: '/alerts', icon: BellRing, label: 'Alerts' },
   { to: '/analytics', icon: BarChart2, label: 'Analytics' },
+  { to: '/ask', icon: Sparkles, label: 'Ask AI' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 

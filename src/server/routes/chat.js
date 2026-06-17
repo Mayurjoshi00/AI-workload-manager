@@ -66,7 +66,7 @@ router.post('/message', async (req, res) => {
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: systemContext,
     })
 
@@ -95,18 +95,39 @@ router.post('/message', async (req, res) => {
       }
     })
   } catch (err) {
-  console.error('[Chat] Gemini API error:', err.message)
-  
+  console.error('[Chat] Gemini API error:', err.status || '', err.message)
+
   let userMessage = 'Something went wrong. Please try again.'
-  
-  if (err.message?.includes('429') || err.message?.includes('quota')) {
+
+  // The SDK attaches the real HTTP status code to GoogleGenerativeAIFetchError
+  // (err.status). Use that for classification instead of guessing from the
+  // message text — the SDK's own error strings are formatted as
+  // "Error fetching from <url>: ..." for EVERY API-level error (bad model name,
+  // bad request, server error, etc), so matching on the word "fetch" mislabels
+  // almost any real API error as a network problem.
+  const status = err.status
+
+  if (status === 429) {
     userMessage = 'Rate limit reached. Please wait a moment and try again. (Free tier allows 15 requests per minute)'
-  } else if (err.message?.includes('API_KEY') || err.message?.includes('api key')) {
+  } else if (status === 401 || status === 403) {
     userMessage = 'Invalid API key. Please check your GEMINI_API_KEY in the .env file.'
-  } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+  } else if (status === 404) {
+    userMessage = 'The configured Gemini model is unavailable (it may have been retired). Please update the model name in chat.js.'
+  } else if (typeof status === 'number') {
+    // Any other real response from Google's API — surface the actual reason.
+    userMessage = `Gemini API error (${status}): ${err.message?.replace(/^Error fetching from [^:]+:\s*/, '') || 'Unknown error'}`
+  } else if (
+    err.cause?.code === 'ENOTFOUND' ||
+    err.cause?.code === 'ECONNREFUSED' ||
+    err.cause?.code === 'ETIMEDOUT' ||
+    err.name === 'GoogleGenerativeAIAbortError'
+  ) {
+    // No HTTP status was ever received — this is a genuine connectivity failure.
     userMessage = 'Network error. Please check your internet connection.'
+  } else {
+    userMessage = err.message || userMessage
   }
-  
+
   res.status(500).json({ error: userMessage })
 }
 })

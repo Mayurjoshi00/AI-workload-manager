@@ -1,8 +1,19 @@
 const express = require('express')
 const router = express.Router()
+const mongoose = require('mongoose')
 const Session = require('../models/Session')
 
+// Helper: returns true only when Mongoose has an active connection.
+// Without this guard, model queries buffer indefinitely when MongoDB
+// is not connected, hanging the HTTP request and causing an infinite spinner.
+function isMongoConnected() {
+  return mongoose.connection.readyState === 1
+}
+
 router.get('/sessions', async (req, res) => {
+  if (!isMongoConnected()) {
+    return res.json([])
+  }
   try {
     const sessions = await Session.find({ endTime: { $exists: true } })
       .sort({ startTime: -1 })
@@ -14,6 +25,9 @@ router.get('/sessions', async (req, res) => {
 })
 
 router.get('/summary', async (req, res) => {
+  if (!isMongoConnected()) {
+    return res.json({ totalSessions: 0, totalMinutes: 0, avgPeakCPU: 0, avgPeakRAM: 0, totalAlerts: 0 })
+  }
   try {
     const sessions = await Session.find({ endTime: { $exists: true } })
     const totalSessions = sessions.length

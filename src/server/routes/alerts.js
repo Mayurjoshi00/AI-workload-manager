@@ -1,8 +1,16 @@
 const express = require('express')
 const router = express.Router()
+const mongoose = require('mongoose')
 const Alert = require('../models/Alert')
 
+function isMongoConnected() {
+  return mongoose.connection.readyState === 1
+}
+
 router.get('/', async (req, res) => {
+  if (!isMongoConnected()) {
+    return res.json([])
+  }
   try {
     const alerts = await Alert.find().sort({ createdAt: -1 }).limit(50)
     res.json(alerts)
@@ -12,6 +20,9 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
+  if (!isMongoConnected()) {
+    return res.status(503).json({ error: 'Database not connected' })
+  }
   try {
     const alert = new Alert(req.body)
     await alert.save()
@@ -22,6 +33,9 @@ router.post('/', async (req, res) => {
 })
 
 router.patch('/:id/resolve', async (req, res) => {
+  if (!isMongoConnected()) {
+    return res.status(503).json({ error: 'Database not connected' })
+  }
   try {
     const alert = await Alert.findByIdAndUpdate(
       req.params.id,
@@ -35,6 +49,9 @@ router.patch('/:id/resolve', async (req, res) => {
 })
 
 router.delete('/clear', async (req, res) => {
+  if (!isMongoConnected()) {
+    return res.status(503).json({ error: 'Database not connected' })
+  }
   try {
     await Alert.deleteMany({})
     res.json({ message: 'All alerts cleared' })

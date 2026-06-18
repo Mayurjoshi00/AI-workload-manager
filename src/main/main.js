@@ -50,7 +50,18 @@ function startServer() {
 }
 
 app.whenReady().then(() => {
-  startServer()
+  const isDev = process.env.NODE_ENV === 'development'
+
+  // In dev mode, `npm run dev:server` (nodemon) already runs the Express server.
+  // Forking a second server here causes two processes to compete for port 5001.
+  // On Windows, both can bind to the same port, so requests are split between
+  // the real server (with MongoDB/polling) and this fork (without), making the
+  // dashboard show all zeros and analytics/alerts hang.
+  // Only fork the server in production where nodemon is not running.
+  if (!isDev) {
+    startServer()
+  }
+
   createWindow()
 
   app.on('activate', () => {

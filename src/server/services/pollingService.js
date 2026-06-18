@@ -93,17 +93,44 @@ async function pollGPU() {
 async function pollProcesses() {
   try {
     const result = await si.processes().catch(() => ({ list: [] }))
-    state.processes = (result.list || []).map(p => ({
-      pid: p.pid,
-      name: p.name,
-      cpu: safeNumber(p.cpu),
-      memory: safeNumber(p.mem),
-      memoryBytes: safeNumber(p.memRss),
-      command: p.command || '',
-      diskReadBytes: safeNumber(p.io_read_bytes ?? p.ioReadBytes ?? 0),
-      diskWriteBytes: safeNumber(p.io_write_bytes ?? p.ioWriteBytes ?? 0),
-      gpuUsagePercent: p.gpu ? safeNumber(p.gpu) : null,
-    }))
+    const totalMemBytes = state.metrics?.memory?.total || 0
+
+    state.processes = (result.list || []).map(p => {
+      const memPercent = safeNumber(p.mem)
+      const memRssRaw = safeNumber(p.memRss)
+
+      // On Windows, systeminformation can return memRss in KB instead of bytes
+      // depending on the OS version and how PowerShell reports WorkingSet64.
+      // A real process using even 1 MB will have memRss >= 1,048,576 if in bytes.
+      // If it's smaller but non-zero, it's almost certainly KB — multiply by 1024.
+      let memoryBytes = 0
+      if (memRssRaw >= 1024 * 1024) {
+        // Looks like bytes already (>= 1 MB threshold)
+        memoryBytes = memRssRaw
+      } else if (memRssRaw > 0) {
+        // Likely in KB — convert to bytes
+        memoryBytes = memRssRaw * 1024
+      }
+
+      // If memRss was 0 (Windows permission quirk or missing field),
+      // fall back to deriving bytes from the memory percentage × total RAM.
+      // This is independent of memRss units and is always reliable.
+      if (memoryBytes === 0 && memPercent > 0 && totalMemBytes > 0) {
+        memoryBytes = Math.round((memPercent / 100) * totalMemBytes)
+      }
+
+      return {
+        pid: p.pid,
+        name: p.name,
+        cpu: safeNumber(p.cpu),
+        memory: memPercent,
+        memoryBytes,
+        command: p.command || '',
+        diskReadBytes: safeNumber(p.io_read_bytes ?? p.ioReadBytes ?? 0),
+        diskWriteBytes: safeNumber(p.io_write_bytes ?? p.ioWriteBytes ?? 0),
+        gpuUsagePercent: p.gpu ? safeNumber(p.gpu) : null,
+      }
+    })
   } catch (err) {
     console.error('[Polling] processes error:', err.message)
   }

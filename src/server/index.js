@@ -32,13 +32,9 @@ function startServerAndServices(mongoConnected = false) {
   app.listen(PORT, async () => {
     console.log('Server running on port ' + PORT)
     if (process.send) process.send('Server ready')
-    try {
-      await startPolling()
-    } catch (err) {
-      console.error('Failed to start polling services:', err.message)
-    }
     if (mongoConnected) {
       try {
+      await startPolling()
       await startSession()
       startAlertEngine(10000)
       } catch (err) {

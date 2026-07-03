@@ -2,8 +2,6 @@ import React, { useEffect, useState, useRef } from 'react'
 import useProcessStore from '../store/processStore'
 import AIProcessList from '../components/AIProcessList'
 
-const API = 'http://localhost:5001/api'
-
 const SORT_KEYS = [
   { key: 'cpu', label: 'CPU' },
   { key: 'memory', label: 'Memory' },
@@ -20,7 +18,7 @@ export default function Processes() {
 
   async function fetchProcesses() {
     try {
-      const res = await fetch(`${API}/processes`)
+      const res = await fetch('/api/processes')
       if (!res.ok) throw new Error('Failed to load processes')
       const data = await res.json()
       setProcesses(data)
